@@ -1,0 +1,12 @@
+﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS dev
+WORKDIR /src
+
+COPY WebApi.csproj ./
+RUN dotnet restore
+
+COPY . ./
+
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080
+EXPOSE 8080
+
+CMD ["dotnet", "watch", "run", "--no-launch-profile", "--urls", "http://0.0.0.0:8080"]
