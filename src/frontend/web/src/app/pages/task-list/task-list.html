@@ -1,0 +1,28 @@
+﻿<h2>Task App</h2>
+
+<div style="margin-bottom: 12px;">
+  <input [(ngModel)]="newTitle" placeholder="Title" />
+  <input [(ngModel)]="newDescription" placeholder="Description (optional)" />
+  <button (click)="create()">Add</button>
+</div>
+
+<div *ngIf="loading">Loading</div>
+<div *ngIf="error" style="color: red;">{{ error }}</div>
+
+<ul>
+  <li *ngFor="let t of tasks" style="margin-bottom: 6px;">
+    <label style="cursor: pointer;">
+      <input type="checkbox" [checked]="t.completed" (change)="toggle(t)" />
+      <span [style.textDecoration]="t.completed ? 'line-through' : 'none'">{{ t.title }}</span>
+    </label>
+    <small *ngIf="t.description">  {{ t.description }}</small>
+    <button style="margin-left: 8px;" (click)="remove(t)">delete</button>
+  </li>
+</ul>
+
+<div style="margin-top: 12px;">
+  <button (click)="prev()" [disabled]="!canPrev()">Prev</button>
+  <span style="margin: 0 8px;">Page {{ page }}</span>
+  <button (click)="next()" [disabled]="!canNext()">Next</button>
+  <span style="margin-left: 8px;">Total: {{ total }}</span>
+</div>
