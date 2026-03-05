@@ -1,4 +1,4 @@
-﻿import { inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 export interface TaskItem {
@@ -17,6 +17,9 @@ export interface PagedTasks {
   pageSize: number;
 }
 
+@Injectable({
+  providedIn: 'root'
+})
 export class TaskApi {
   private http = inject(HttpClient);
   private api = '/api/tasks';

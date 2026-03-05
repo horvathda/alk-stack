@@ -1,8 +1,9 @@
-﻿
-import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs/operators';
-import { TaskApi, TaskItem } from '../../services/task';
+import { Observable } from 'rxjs';
+
+import { TaskStore, TaskState } from '../../state/task-store';
+import { TaskItem } from '../../services/task';
 
 @Component({
   selector: 'app-task-list',
@@ -11,99 +12,31 @@ import { TaskApi, TaskItem } from '../../services/task';
   templateUrl: './task-list.html'
 })
 export class TaskListComponent implements OnInit {
-  private api = new TaskApi();
+  vm$: Observable<TaskState>;
 
-  tasks: TaskItem[] = [];
-  page = 1;
-  pageSize = 5;
-  total = 0;
-
-  loading = false;
-  error: string | null = null;
-
-  // per-item “busy” védelem (ne lehessen spam-kattintani)
-  busyIds = new Set<string>();
-
-  ngOnInit(): void {
-    this.load();
+  constructor(public store: TaskStore) {
+    this.vm$ = this.store.vm$;
   }
 
-  load() {
-    this.loading = true;
-    this.error = null;
-
-    this.api.getTasks(this.page, this.pageSize)
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: (res: any) => {
-          this.tasks = res?.items ?? [];
-          this.total = res?.total ?? 0;
-        },
-        error: (err) => {
-          this.error = err?.message ?? 'Failed to load tasks';
-          this.tasks = [];
-          this.total = 0;
-        }
-      });
+  ngOnInit(): void {
+    this.store.refresh();
   }
 
   toggle(t: TaskItem) {
-    if (!t.id || this.busyIds.has(t.id)) return;
-
-    this.busyIds.add(t.id);
-    this.error = null;
-
-    this.api.updateTask(t.id, {
-      title: t.title,
-      description: t.description ?? null,
-      completed: !t.completed
-    })
-      .pipe(finalize(() => this.busyIds.delete(t.id!)))
-      .subscribe({
-        next: () => this.load(), // mindig DB-ből frissít
-        error: (err) => {
-          this.error = err?.message ?? 'Failed to update';
-        }
-      });
+    if (!t.id) return;
+    this.store.update(t.id, t.title, t.description ?? null, !t.completed);
   }
 
   remove(t: TaskItem) {
-    if (!t.id || this.busyIds.has(t.id)) return;
-
-    this.busyIds.add(t.id);
-    this.error = null;
-
-    this.api.deleteTask(t.id)
-      .pipe(finalize(() => this.busyIds.delete(t.id!)))
-      .subscribe({
-        next: () => {
-          // ha az utolsó elemet törölted az oldalon, lépj vissza 1 oldalt ha kell
-          if (this.page > 1 && this.tasks.length === 1) this.page--;
-          this.load(); // mindig DB-ből frissít
-        },
-        error: (err) => {
-          this.error = err?.message ?? 'Failed to delete';
-        }
-      });
+    if (!t.id) return;
+    this.store.delete(t.id);
   }
 
-  canPrev() {
-    return !this.loading && this.page > 1;
+  prev(vm: TaskState) {
+    if (vm.page > 1) this.store.setPage(vm.page - 1);
   }
 
-  canNext() {
-    return !this.loading && (this.page * this.pageSize) < this.total;
-  }
-
-  prev() {
-    if (!this.canPrev()) return;
-    this.page--;
-    this.load();
-  }
-
-  next() {
-    if (!this.canNext()) return;
-    this.page++;
-    this.load();
+  next(vm: TaskState) {
+    if (vm.page * vm.pageSize < vm.total) this.store.setPage(vm.page + 1);
   }
 }

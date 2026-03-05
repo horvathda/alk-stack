@@ -1,0 +1,26 @@
+{
+    "name": "alk-stack-dev",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "frontend",
+    "workspaceFolder": "/workspace",
+    "forwardPorts": [
+        4200,
+        8080
+    ],
+    "postCreateCommand": "npm install",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csharp",
+                "angular.ng-template",
+                "ms-azuretools.vscode-docker",
+                "github.vscode-github-actions",
+                "humao.rest-client",
+                "mongodb.mongodb-vscode"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainer-config/features/dot-config:4": {}
+    }
+}

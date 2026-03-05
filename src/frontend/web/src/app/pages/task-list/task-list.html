@@ -1,45 +1,34 @@
 ﻿<h2>Feladatok</h2>
 
-<div style="margin-bottom: 10px;">
-  <button (click)="load()" >Frissítés</button>
-</div>
+<div *ngIf="(vm$ | async) as vm">
+  <div *ngIf="vm.loading">Töltés…</div>
+  <div *ngIf="vm.error" style="color:red;">{{ vm.error }}</div>
 
-<div *ngIf="loading">Töltés…</div>
-<div *ngIf="error" style="color:red;">{{ error }}</div>
+  <ul *ngIf="vm.items.length > 0">
+    <li *ngFor="let t of vm.items" style="margin-bottom: 6px;">
+      <label style="cursor:pointer;">
+        <input type="checkbox" [checked]="t.completed" (change)="toggle(t)" [disabled]="vm.loading" />
+        <span [style.textDecoration]="t.completed ? 'line-through' : 'none'">
+          {{ t.title }}
+        </span>
+      </label>
 
-<ul *ngIf="tasks.length > 0">
-  <li *ngFor="let t of tasks" style="margin-bottom: 6px;">
-    <label style="cursor:pointer;">
-      <input
-        type="checkbox"
-        [checked]="t.completed"
-        (change)="toggle(t)"
-        [disabled]="loading || (t.id && busyIds.has(t.id))"
-      />
-      <span [style.textDecoration]="t.completed ? 'line-through' : 'none'">
-        {{ t.title }}
-      </span>
-    </label>
+      <small *ngIf="t.description"> — {{ t.description }}</small>
 
-    <small *ngIf="t.description"> — {{ t.description }}</small>
+      <button style="margin-left: 8px;" (click)="remove(t)" [disabled]="vm.loading">
+        törlés
+      </button>
+    </li>
+  </ul>
 
-    <button
-      style="margin-left: 8px;"
-      (click)="remove(t)"
-      [disabled]="loading || (t.id && busyIds.has(t.id))"
-    >
-      törlés
-    </button>
-  </li>
-</ul>
+  <div *ngIf="!vm.loading && vm.items.length === 0">
+    Nincs feladat.
+  </div>
 
-<div *ngIf="!loading && tasks.length === 0">
-  Nincs feladat.
-</div>
-
-<div style="margin-top: 12px;">
-  <button (click)="prev()" [disabled]="!canPrev()">Prev</button>
-  <span style="margin: 0 8px;">Oldal {{ page }}</span>
-  <button (click)="next()" [disabled]="!canNext()">Next</button>
-  <span style="margin-left: 8px;">Összes: {{ total }}</span>
+  <div style="margin-top: 12px;">
+    <button (click)="prev(vm)" [disabled]="vm.loading || vm.page <= 1">Prev</button>
+    <span style="margin: 0 8px;">Oldal {{ vm.page }}</span>
+    <button (click)="next(vm)" [disabled]="vm.loading || (vm.page * vm.pageSize >= vm.total)">Next</button>
+    <span style="margin-left: 8px;">Összes: {{ vm.total }}</span>
+  </div>
 </div>

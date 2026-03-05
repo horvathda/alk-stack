@@ -1,38 +1,41 @@
 <h2>Hozzáadás / módosítás</h2>
 
-<div *ngIf="error" style="color:red;">{{ error }}</div>
+<div *ngIf="(vm$ | async) as vm">
+  <div *ngIf="vm.error" style="color:red;">{{ vm.error }}</div>
 
-<div style="display:flex; gap:20px; align-items:flex-start;">
+  <div style="display:flex; gap:20px; align-items:flex-start;">
+    <section style="min-width:260px;">
+      <h3>Feladat kiválasztása</h3>
+      <button (click)="store.refresh()" [disabled]="vm.loading">Frissítés</button>
 
-  <section style="min-width:260px;">
-    <h3>Feladat kiválasztása</h3>
-    <button (click)="refreshList()">Frissítés</button>
-    <ul>
-      <li *ngFor="let t of tasks">
-        <a href="#" (click)="$event.preventDefault(); selectTask(t.id!)">
-          {{ t.title }}
-        </a>
-      </li>
-    </ul>
-  </section>
+      <ul>
+        <li *ngFor="let t of vm.items">
+          <a href="#" (click)="$event.preventDefault(); selectTask(t)">
+            {{ t.title }}
+          </a>
+        </li>
+      </ul>
+    </section>
 
-  <section style="flex:1;">
-    <h3>{{ selectedId ? 'Módosítás' : 'Új feladat' }}</h3>
+    <section style="flex:1;">
+      <h3>{{ selectedId ? 'Módosítás' : 'Új feladat' }}</h3>
 
-    <div style="display:flex; flex-direction:column; gap:8px; max-width:520px;">
-      <input [(ngModel)]="title" placeholder="Title" />
-      <input [(ngModel)]="description" placeholder="Description (optional)" />
+      <div style="display:flex; flex-direction:column; gap:8px; max-width:520px;">
+        <input [(ngModel)]="title" placeholder="Title" [disabled]="vm.loading" />
+        <input [(ngModel)]="description" placeholder="Description (optional)" [disabled]="vm.loading" />
 
-      <label *ngIf="selectedId">
-        <input type="checkbox" [(ngModel)]="completed" />
-        Completed
-      </label>
+        <label *ngIf="selectedId">
+          <input type="checkbox" [(ngModel)]="completed" [disabled]="vm.loading" />
+          Completed
+        </label>
 
-      <div style="display:flex; gap:8px;">
-        <button (click)="save()" [disabled]="loading">{{ selectedId ? 'Mentés' : 'Hozzáadás' }}</button>
-        <button (click)="resetForm()">Új (reset)</button>
+        <div style="display:flex; gap:8px;">
+          <button (click)="save()" [disabled]="vm.loading">
+            {{ selectedId ? 'Mentés' : 'Hozzáadás' }}
+          </button>
+          <button (click)="resetForm()" [disabled]="vm.loading">Új (reset)</button>
+        </div>
       </div>
-    </div>
-  </section>
-
+    </section>
+  </div>
 </div>

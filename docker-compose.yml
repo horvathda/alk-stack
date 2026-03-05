@@ -35,7 +35,6 @@
     depends_on:
       - backend
     environment:
-      # Windows/WSL alatt sokszor kell a polling a file watchhoz:
       CHOKIDAR_USEPOLLING: "true"
     volumes:
       - ./src/frontend/web:/app

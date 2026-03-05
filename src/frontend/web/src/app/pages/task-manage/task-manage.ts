@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TaskApi, TaskItem } from '../../services/task';
+import { Observable } from 'rxjs';
+
+import { TaskStore, TaskState } from '../../state/task-store';
+import { TaskItem } from '../../services/task';
 
 @Component({
   selector: 'app-task-manage',
@@ -9,37 +12,26 @@ import { TaskApi, TaskItem } from '../../services/task';
   imports: [CommonModule, FormsModule],
   templateUrl: './task-manage.html'
 })
+export class TaskManageComponent implements OnInit {
+  vm$: Observable<TaskState>;
 
-export class TaskManageComponent {
-  private api = new TaskApi();
-
-  // lista a kiválasztáshoz
-  tasks: TaskItem[] = [];
   selectedId: string | null = null;
-
-  // form mezők
   title = '';
   description = '';
   completed = false;
 
-  loading = false;
-  error: string | null = null;
-
-  constructor() {
-    this.refreshList();
+  constructor(public store: TaskStore) {
+    this.vm$ = this.store.vm$;
   }
 
-  refreshList() {
-    this.api.getTasks(1, 100).subscribe({
-      next: (res) => this.tasks = res.items,
-      error: (err) => this.error = err?.message ?? 'Failed to load tasks'
-    });
+  ngOnInit(): void {
+    this.store.refresh();
   }
 
-  selectTask(id: string) {
-    const t = this.tasks.find(x => x.id === id);
-    if (!t) return;
-    this.selectedId = id;
+  selectTask(t: TaskItem) {
+    if (!t.id) return;
+
+    this.selectedId = t.id;
     this.title = t.title;
     this.description = t.description ?? '';
     this.completed = t.completed;
@@ -50,36 +42,20 @@ export class TaskManageComponent {
     this.title = '';
     this.description = '';
     this.completed = false;
-    this.error = null;
   }
 
   save() {
     const title = this.title.trim();
     if (!title) return;
 
-    this.loading = true;
-    this.error = null;
+    const description = this.description?.trim() || null;
 
-    // UPDATE
     if (this.selectedId) {
-      this.api.updateTask(this.selectedId, {
-        title,
-        description: this.description?.trim() || null,
-        completed: this.completed
-      }).subscribe({
-        next: () => { this.loading = false; this.refreshList(); },
-        error: (err) => { this.loading = false; this.error = err?.message ?? 'Update failed'; }
-      });
+      this.store.update(this.selectedId, title, description, this.completed);
       return;
     }
 
-    // CREATE
-    this.api.createTask({
-      title,
-      description: this.description?.trim() || null
-    }).subscribe({
-      next: () => { this.loading = false; this.resetForm(); this.refreshList(); },
-      error: (err) => { this.loading = false; this.error = err?.message ?? 'Create failed'; }
-    });
+    this.store.create(title, description);
+    this.resetForm();
   }
 }
