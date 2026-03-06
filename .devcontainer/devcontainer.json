@@ -1,13 +1,18 @@
 {
     "name": "alk-stack-dev",
-    "dockerComposeFile": "../docker-compose.yml",
-    "service": "frontend",
-    "workspaceFolder": "/app",
+    "dockerComposeFile": [
+        "../docker-compose.yml",
+        "docker-compose.yml"
+    ],
+    "service": "devcontainer",
+    "workspaceFolder": "/workspaces/alk-stack",
+    "shutdownAction": "stopCompose",
     "forwardPorts": [
         4200,
-        8080
+        8080,
+        27017
     ],
-    "postCreateCommand": "npm install",
+    "postCreateCommand": "cd /workspaces/alk-stack/src/frontend/web && npm install",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -16,8 +21,7 @@
                 "ms-azuretools.vscode-docker",
                 "github.vscode-github-actions",
                 "humao.rest-client",
-                "mongodb.mongodb-vscode",
-                "GitHub.vscode-pull-request-github"
+                "mongodb.mongodb-vscode"
             ]
         }
     },

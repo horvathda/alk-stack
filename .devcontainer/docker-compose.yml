@@ -1,0 +1,13 @@
+services:
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm
+    container_name: alk-devcontainer
+    working_dir: /workspaces/alk-stack
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/alk-stack:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - mongo
+      - backend
+      - frontend
