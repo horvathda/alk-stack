@@ -17,7 +17,7 @@ public class TaskRepository
     public async Task<(List<TaskItem> Items, long Total)> GetPagedAsync(int page, int pageSize, string? q, bool? completed)
     {
         page = Math.Max(page, 1);
-        pageSize = Math.Clamp(pageSize, 1, 100);
+        pageSize = Math.Clamp(pageSize, 1, 30);
 
         var filters = new List<FilterDefinition<TaskItem>> { Builders<TaskItem>.Filter.Empty };
 

@@ -2,7 +2,7 @@
     "name": "alk-stack-dev",
     "dockerComposeFile": "../docker-compose.yml",
     "service": "frontend",
-    "workspaceFolder": "/workspace",
+    "workspaceFolder": "/app",
     "forwardPorts": [
         4200,
         8080
@@ -16,7 +16,8 @@
                 "ms-azuretools.vscode-docker",
                 "github.vscode-github-actions",
                 "humao.rest-client",
-                "mongodb.mongodb-vscode"
+                "mongodb.mongodb-vscode",
+                "GitHub.vscode-pull-request-github"
             ]
         }
     },

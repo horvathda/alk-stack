@@ -4,13 +4,19 @@
   <div *ngIf="vm.loading">Töltés…</div>
   <div *ngIf="vm.error" style="color:red;">{{ vm.error }}</div>
 
+  <div *ngIf="!vm.loading" style="margin: 8px 0 14px 0;">
+    <strong>Függőben:</strong> {{ getPendingCount(vm) }}
+    <span style="margin: 0 10px;">•</span>
+    <strong>Kész:</strong> {{ getCompletedCount(vm) }}
+    <span style="margin: 0 10px;">•</span>
+    <strong>Összes:</strong> {{ vm.items.length }}
+  </div>
+
   <ul *ngIf="vm.items.length > 0">
-    <li *ngFor="let t of vm.items; trackBy: trackById" style="margin-bottom: 6px; opacity: {{ isDeleting(vm, t) ? '0.6' : '1' }};">
+    <li *ngFor="let t of vm.items; trackBy: trackById"
+      style="margin-bottom: 6px; opacity: {{ isDeleting(vm, t) ? '0.6' : '1' }};">
       <label style="cursor:pointer;">
-        <input
-          type="checkbox"
-          [checked]="t.completed"
-          (change)="toggle(t)"
+        <input type="checkbox" [checked]="t.completed" (change)="toggle(t)"
           [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)" />
         <span [style.textDecoration]="t.completed ? 'line-through' : 'none'">
           {{ t.title }}
@@ -19,17 +25,7 @@
 
       <small *ngIf="t.description"> — {{ t.description }}</small>
 
-      <small *ngIf="isSaving(vm, t)" style="margin-left: 8px; color: #666;">
-        mentés...
-      </small>
-
-      <small *ngIf="isDeleting(vm, t)" style="margin-left: 8px; color: #666;">
-        törlés...
-      </small>
-
-      <button
-        style="margin-left: 8px;"
-        (click)="remove(t)"
+      <button style="margin-left: 8px;" (click)="remove(t)"
         [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)">
         törlés
       </button>
@@ -38,12 +34,5 @@
 
   <div *ngIf="!vm.loading && vm.items.length === 0">
     Nincs feladat.
-  </div>
-
-  <div style="margin-top: 12px;">
-    <button (click)="prev(vm)" [disabled]="vm.loading || vm.page <= 1">Prev</button>
-    <span style="margin: 0 8px;">Oldal {{ vm.page }}</span>
-    <button (click)="next(vm)" [disabled]="vm.loading || (vm.page * vm.pageSize >= vm.total)">Next</button>
-    <span style="margin-left: 8px;">Összes: {{ vm.total }}</span>
   </div>
 </div>

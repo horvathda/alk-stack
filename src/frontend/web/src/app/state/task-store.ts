@@ -22,7 +22,7 @@ export class TaskStore {
         items: [],
         total: 0,
         page: 1,
-        pageSize: 5,
+        pageSize: 30,
         loading: false,
         error: null,
         savingIds: [],
