@@ -11,6 +11,8 @@ import { TaskItem } from '../../services/task';
   imports: [CommonModule],
   templateUrl: './task-list.html'
 })
+
+
 export class TaskListComponent implements OnInit {
   vm$: Observable<TaskState>;
 
@@ -20,6 +22,18 @@ export class TaskListComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.refresh();
+  }
+
+  trackById(index: number, t: TaskItem) {
+    return t.id ?? index;
+  }
+
+  isSaving(vm: TaskState, t: TaskItem) {
+    return !!t.id && vm.savingIds.includes(t.id);
+  }
+
+  isDeleting(vm: TaskState, t: TaskItem) {
+    return !!t.id && vm.deletingIds.includes(t.id);
   }
 
   toggle(t: TaskItem) {

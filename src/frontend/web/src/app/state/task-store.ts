@@ -10,6 +10,8 @@ export interface TaskState {
     pageSize: number;
     loading: boolean;
     error: string | null;
+    savingIds: string[];
+    deletingIds: string[];
 }
 
 @Injectable({
@@ -22,16 +24,48 @@ export class TaskStore {
         page: 1,
         pageSize: 5,
         loading: false,
-        error: null
+        error: null,
+        savingIds: [],
+        deletingIds: []
     });
 
-    // olvasható stream a komponenseknek
     readonly vm$: Observable<TaskState> = this.state$.asObservable();
 
     constructor(private api: TaskApi) { }
 
-    /** állapot pillanatnyi értéke (belsőhöz) */
-    private get s() { return this.state$.value; }
+    private get s() {
+        return this.state$.value;
+    }
+
+    private addSaving(id: string) {
+        if (this.s.savingIds.includes(id)) return;
+        this.state$.next({
+            ...this.s,
+            savingIds: [...this.s.savingIds, id]
+        });
+    }
+
+    private removeSaving(id: string) {
+        this.state$.next({
+            ...this.s,
+            savingIds: this.s.savingIds.filter(x => x !== id)
+        });
+    }
+
+    private addDeleting(id: string) {
+        if (this.s.deletingIds.includes(id)) return;
+        this.state$.next({
+            ...this.s,
+            deletingIds: [...this.s.deletingIds, id]
+        });
+    }
+
+    private removeDeleting(id: string) {
+        this.state$.next({
+            ...this.s,
+            deletingIds: this.s.deletingIds.filter(x => x !== id)
+        });
+    }
 
     setPage(page: number) {
         this.state$.next({ ...this.s, page });
@@ -70,7 +104,6 @@ export class TaskStore {
             });
     }
 
-    /** CRUD akciók: mind refresh-el a végén */
     create(title: string, description: string | null) {
         this.state$.next({ ...this.s, loading: true, error: null });
 
@@ -83,31 +116,70 @@ export class TaskStore {
     }
 
     update(id: string, title: string, description: string | null, completed: boolean) {
-        this.state$.next({ ...this.s, loading: true, error: null });
+        const previousItems = this.s.items;
+        const newItems = this.s.items.map(item =>
+            item.id === id ? { ...item, title, description, completed } : item
+        );
 
-        this.api.updateTask(id, { title, description, completed })
-            .pipe(finalize(() => this.state$.next({ ...this.s, loading: false })))
-            .subscribe({
-                next: () => this.refresh(),
-                error: (err) => this.state$.next({ ...this.s, error: err?.message ?? 'Update failed' })
-            });
+        this.state$.next({
+            ...this.s,
+            items: newItems,
+            error: null
+        });
+
+        this.addSaving(id);
+
+        this.api.updateTask(id, { title, description, completed }).subscribe({
+            next: () => {
+                this.removeSaving(id);
+            },
+            error: (err) => {
+                this.state$.next({
+                    ...this.s,
+                    items: previousItems,
+                    error: err?.message ?? 'Update failed'
+                });
+                this.removeSaving(id);
+            }
+        });
     }
 
     delete(id: string) {
-        this.state$.next({ ...this.s, loading: true, error: null });
+        this.addDeleting(id);
 
-        this.api.deleteTask(id)
-            .pipe(finalize(() => this.state$.next({ ...this.s, loading: false })))
-            .subscribe({
-                next: () => {
-                    // ha az utolsó elemet törölted az oldalon, lépj vissza 1 oldalt ha kell
-                    const isLastOnPage = this.s.items.length === 1;
-                    if (this.s.page > 1 && isLastOnPage) {
-                        this.state$.next({ ...this.s, page: this.s.page - 1 });
-                    }
+        this.api.deleteTask(id).subscribe({
+            next: () => {
+                const current = this.s;
+                const nextItems = current.items.filter(x => x.id !== id);
+                const nextTotal = Math.max(0, current.total - 1);
+
+                let nextPage = current.page;
+                const isLastOnPage = current.items.length === 1;
+
+                if (current.page > 1 && isLastOnPage) {
+                    nextPage = current.page - 1;
+                }
+
+                this.state$.next({
+                    ...current,
+                    items: nextItems,
+                    total: nextTotal,
+                    page: nextPage,
+                    error: null,
+                    deletingIds: current.deletingIds.filter(x => x !== id)
+                });
+
+                if (nextPage !== current.page) {
                     this.refresh();
-                },
-                error: (err) => this.state$.next({ ...this.s, error: err?.message ?? 'Delete failed' })
-            });
+                }
+            },
+            error: (err) => {
+                this.state$.next({
+                    ...this.s,
+                    error: err?.message ?? 'Delete failed'
+                });
+                this.removeDeleting(id);
+            }
+        });
     }
 }

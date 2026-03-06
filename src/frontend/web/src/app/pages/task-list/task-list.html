@@ -5,9 +5,13 @@
   <div *ngIf="vm.error" style="color:red;">{{ vm.error }}</div>
 
   <ul *ngIf="vm.items.length > 0">
-    <li *ngFor="let t of vm.items" style="margin-bottom: 6px;">
+    <li *ngFor="let t of vm.items; trackBy: trackById" style="margin-bottom: 6px; opacity: {{ isDeleting(vm, t) ? '0.6' : '1' }};">
       <label style="cursor:pointer;">
-        <input type="checkbox" [checked]="t.completed" (change)="toggle(t)" [disabled]="vm.loading" />
+        <input
+          type="checkbox"
+          [checked]="t.completed"
+          (change)="toggle(t)"
+          [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)" />
         <span [style.textDecoration]="t.completed ? 'line-through' : 'none'">
           {{ t.title }}
         </span>
@@ -15,7 +19,18 @@
 
       <small *ngIf="t.description"> — {{ t.description }}</small>
 
-      <button style="margin-left: 8px;" (click)="remove(t)" [disabled]="vm.loading">
+      <small *ngIf="isSaving(vm, t)" style="margin-left: 8px; color: #666;">
+        mentés...
+      </small>
+
+      <small *ngIf="isDeleting(vm, t)" style="margin-left: 8px; color: #666;">
+        törlés...
+      </small>
+
+      <button
+        style="margin-left: 8px;"
+        (click)="remove(t)"
+        [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)">
         törlés
       </button>
     </li>

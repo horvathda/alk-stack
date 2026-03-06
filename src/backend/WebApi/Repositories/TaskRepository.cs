@@ -39,7 +39,7 @@ public class TaskRepository
         var total = await _tasks.CountDocumentsAsync(filter);
 
         var items = await _tasks.Find(filter)
-            .SortByDescending(x => x.UpdatedAt)
+            .SortBy(x => x.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
