@@ -1,0 +1,64 @@
+﻿nameOverride: ""
+fullnameOverride: ""
+
+imagePullSecrets: []
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/horvathda/alk-frontend
+    tag: "latest"
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+
+backend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/horvathda/alk-backend
+    tag: "latest"
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  env:
+    ASPNETCORE_ENVIRONMENT: Production
+    MONGO_URL: mongodb://root:example@mongo:27017/tasks?authSource=admin
+
+ingress:
+  enabled: true
+  className: nginx
+  host: alk-stack.local
+
+mongodb:
+  enabled: true
+  fullnameOverride: mongo
+  architecture: standalone
+
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/mongodb
+
+  volumePermissions:
+    enabled: false
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/os-shell
+
+  auth:
+    enabled: true
+    rootUser: root
+    rootPassword: example
+    usernames:
+      - root
+    passwords:
+      - example
+    databases:
+      - tasks
+
+  persistence:
+    enabled: true
+    size: 1Gi

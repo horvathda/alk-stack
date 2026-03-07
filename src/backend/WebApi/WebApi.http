@@ -1,2 +1,43 @@
 @WebApi_HostAddress = http://localhost:5186
 
+@host = http://localhost:8080
+
+### GET – Feladatok listázása (lapozással)
+GET {{host}}/api/tasks?page=1&pageSize=10
+Accept: application/json
+
+###
+
+### GET – Egy feladat lekérdezése
+GET {{host}}/api/tasks/REPLACE_WITH_ID
+Accept: application/json
+
+###
+
+### POST – Új feladat létrehozása
+POST {{host}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Példa feladat",
+  "description": "Leírás"
+}
+
+###
+
+### PUT – Feladat frissítése
+PUT {{host}}/api/tasks/REPLACE_WITH_ID
+Content-Type: application/json
+
+{
+  "title": "Frissített cím",
+  "description": "Frissített leírás",
+  "completed": true
+}
+
+###
+
+### DELETE – Feladat törlése
+DELETE {{host}}/api/tasks/REPLACE_WITH_ID
+
+###

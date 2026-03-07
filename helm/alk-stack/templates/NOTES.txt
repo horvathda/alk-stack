@@ -1,0 +1,9 @@
+﻿1. Add this host locally if needed:
+   alk-stack.local
+
+2. If ingress-nginx is installed, open:
+   http://alk-stack.local
+
+3. If ingress is disabled, use:
+   kubectl port-forward svc/{{ include "alk-stack.fullname" . }}-frontend 8081:80 -n {{ .Release.Namespace }}
+   kubectl port-forward svc/{{ include "alk-stack.fullname" . }}-backend 8080:8080 -n {{ .Release.Namespace }}
