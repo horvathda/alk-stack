@@ -5,14 +5,21 @@
         "docker-compose.yml"
     ],
     "service": "devcontainer",
+    "runServices": [
+        "mongo",
+        "backend",
+        "frontend",
+        "devcontainer"
+    ],
     "workspaceFolder": "/workspaces/alk-stack",
     "shutdownAction": "stopCompose",
+    "overrideCommand": true,
     "forwardPorts": [
         4200,
         8080,
         27017
     ],
-    "postCreateCommand": "cd /workspaces/alk-stack/src/frontend/web && npm install",
+    "postCreateCommand": "cd src/frontend/web && npm install",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -21,11 +28,10 @@
                 "ms-azuretools.vscode-docker",
                 "github.vscode-github-actions",
                 "humao.rest-client",
-                "mongodb.mongodb-vscode"
+                "mongodb.mongodb-vscode",
+                "ms-dotnettools.csdevkit",
+                "ms-dotnettools.vscode-dotnet-runtime"
             ]
         }
-    },
-    "features": {
-        "ghcr.io/devcontainer-config/features/dot-config:4": {}
     }
 }

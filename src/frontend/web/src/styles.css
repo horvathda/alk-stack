@@ -1,1 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
+
+
+@import "./app/pages/task-list/task-list.css";
+@import "./app/pages/task-manage/task-manage.css";
+@import "./app/app.css"
