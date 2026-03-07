@@ -4,22 +4,20 @@ fullnameOverride: ""
 imagePullSecrets: []
 
 frontend:
-  replicaCount: 1
   image:
-    repository: ghcr.io/horvathda/alk-frontend
+    repository: alk-stack-frontend
     tag: "latest"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   service:
     type: ClusterIP
     port: 80
     targetPort: 80
 
 backend:
-  replicaCount: 1
   image:
-    repository: ghcr.io/horvathda/alk-backend
+    repository: alk-stack-backend
     tag: "latest"
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   service:
     type: ClusterIP
     port: 8080
