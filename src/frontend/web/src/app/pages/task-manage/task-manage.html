@@ -1,40 +1,74 @@
-<h2>Hozzáadás / módosítás</h2>
-
-<div *ngIf="(vm$ | async) as vm">
-  <div *ngIf="vm.error" style="color:red;">{{ vm.error }}</div>
-
-  <div style="display:flex; gap:20px; align-items:flex-start;">
-    <section style="min-width:260px;">
-      <h3>Feladat kiválasztása</h3>
-
-      <ul>
-        <li *ngFor="let t of vm.items">
-          <a href="#" (click)="$event.preventDefault(); selectTask(t)">
-            {{ t.title }}
-          </a>
-        </li>
-      </ul>
-    </section>
-
-    <section style="flex:1;">
-      <h3>{{ selectedId ? 'Módosítás' : 'Új feladat' }}</h3>
-
-      <div style="display:flex; flex-direction:column; gap:8px; max-width:520px;">
-        <input [(ngModel)]="title" placeholder="Title" [disabled]="vm.loading" />
-        <input [(ngModel)]="description" placeholder="Description (optional)" [disabled]="vm.loading" />
-
-        <label *ngIf="selectedId">
-          <input type="checkbox" [(ngModel)]="completed" [disabled]="vm.loading" />
-          Completed
-        </label>
-
-        <div style="display:flex; gap:8px;">
-          <button (click)="save()" [disabled]="vm.loading">
-            {{ selectedId ? 'Mentés' : 'Hozzáadás' }}
-          </button>
-          <button (click)="resetForm()" [disabled]="vm.loading">Új (reset)</button>
-        </div>
+<section class="manage-page" *ngIf="(vm$ | async) as vm">
+  <div class="manage-shell">
+    <div class="manage-header">
+      <div>
+        <h2>Hozzáadás / módosítás</h2>
+        <p class="manage-subtitle">Új feladat rögzítése vagy meglévő szerkesztése</p>
       </div>
-    </section>
+
+    </div>
+
+    <div *ngIf="vm.error" class="info-banner error">{{ vm.error }}</div>
+
+    <div class="manage-grid">
+      <aside class="manage-card manage-sidebar">
+        <div class="card-head">
+          <h3>Feladat kiválasztása</h3>
+          <span class="mini-count">{{ vm.items.length }} db</span>
+        </div>
+
+        <div *ngIf="vm.loading" class="info-banner">Töltés…</div>
+
+        <ul class="manage-task-list" *ngIf="vm.items.length > 0">
+          <li *ngFor="let t of vm.items">
+            <button type="button" class="task-pick" [class.active]="selectedId === t.id" (click)="selectTask(t)">
+              <span class="task-pick-title">{{ t.title }}</span>
+              <small class="task-pick-desc" *ngIf="t.description">{{ t.description }}</small>
+            </button>
+          </li>
+        </ul>
+
+        <div *ngIf="!vm.loading && vm.items.length === 0" class="empty-box">
+          Még nincs választható feladat.
+        </div>
+      </aside>
+
+      <section class="manage-card manage-form-card">
+        <div class="card-head">
+          <h3>{{ selectedId ? 'Feladat módosítása' : 'Új feladat' }}</h3>
+          <span class="mode-badge" [class.edit]="!!selectedId">
+            {{ selectedId ? 'Szerkesztés' : 'Létrehozás' }}
+          </span>
+        </div>
+
+        <div class="manage-form">
+          <label class="field">
+            <span class="field-label">Cím</span>
+            <input [(ngModel)]="title" placeholder="Pl. Villanyszámla befizetése" [disabled]="vm.loading" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">Leírás</span>
+            <textarea [(ngModel)]="description" rows="4" placeholder="Rövid megjegyzés vagy részletek"
+              [disabled]="vm.loading"></textarea>
+          </label>
+
+          <label class="check-row" *ngIf="selectedId">
+            <input type="checkbox" [(ngModel)]="completed" [disabled]="vm.loading" />
+            <span>Készre állítva</span>
+          </label>
+
+          <div class="form-actions">
+            <button class="primary-btn" (click)="save()" [disabled]="vm.loading || !title.trim()">
+              {{ selectedId ? 'Mentés' : 'Hozzáadás' }}
+            </button>
+
+            <button class="ghost-btn" (click)="resetForm()" [disabled]="vm.loading">
+              Új / reset
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
-</div>
+</section>

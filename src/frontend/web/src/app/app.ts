@@ -5,19 +5,45 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  template: `
-    <nav style="display:flex; gap:12px; padding:12px; border-bottom:1px solid #ddd;">
-      <a routerLink="/tasks" routerLinkActive="active">Feladatok</a>
-      <a routerLink="/manage" routerLinkActive="active">Hozzáadás / módosítás</a>
-    </nav>
+  template:
+    `
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <a routerLink="/tasks" class="brand">
+            <span class="brand-mark">✓</span>
+            <div>
+              <strong>TaskFlow</strong>
+              <small>Feladatkezelő</small>
+            </div>
+          </a>
 
-    <main style="padding:12px;">
-      <router-outlet />
-    </main>
+          <nav class="nav-links">
+            <a
+              routerLink="/tasks"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              Feladatok
+            </a>
+
+            <a
+              routerLink="/manage"
+              routerLinkActive="active"
+              class="nav-link"
+            >
+              Hozzáadás / módosítás
+            </a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="page-content">
+        <router-outlet />
+      </main>
+    </div>
   `,
-  styles: [`
-    a { text-decoration: none; }
-    .active { font-weight: bold; }
-  `]
+  styles: ["./styles.css"]
 })
-export class App {}
+export class App { }

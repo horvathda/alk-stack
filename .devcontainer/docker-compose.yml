@@ -1,6 +1,6 @@
 services:
   devcontainer:
-    image: mcr.microsoft.com/devcontainers/universal:2
+    image: mcr.microsoft.com/devcontainers/dotnet:9.0
     container_name: alk-devcontainer
     working_dir: /workspaces/alk-stack
     command: sleep infinity

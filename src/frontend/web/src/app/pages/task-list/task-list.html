@@ -1,38 +1,63 @@
-﻿<h2>Feladatok</h2>
+﻿<section class="task-page" *ngIf="(vm$ | async) as vm">
+  <div class="task-shell">
+    <div class="task-header">
+      <div>
+        <h2>Feladatok</h2>
+        <p class="task-subtitle">Áttekinthető, gyorsan kezelhető lista</p>
+      </div>
 
-<div *ngIf="(vm$ | async) as vm">
-  <div *ngIf="vm.loading">Töltés…</div>
-  <div *ngIf="vm.error" style="color:red;">{{ vm.error }}</div>
+      <div class="task-stats" *ngIf="!vm.loading">
+        <div class="stat-badge">
+          <span class="stat-label">Függőben</span>
+          <strong>{{ getPendingCount(vm) }}</strong>
+        </div>
+        <div class="stat-badge done">
+          <span class="stat-label">Kész</span>
+          <strong>{{ getCompletedCount(vm) }}</strong>
+        </div>
+        <div class="stat-badge total">
+          <span class="stat-label">Összes</span>
+          <strong>{{ vm.items.length }}</strong>
+        </div>
+      </div>
+    </div>
 
-  <div *ngIf="!vm.loading" style="margin: 8px 0 14px 0;">
-    <strong>Függőben:</strong> {{ getPendingCount(vm) }}
-    <span style="margin: 0 10px;">•</span>
-    <strong>Kész:</strong> {{ getCompletedCount(vm) }}
-    <span style="margin: 0 10px;">•</span>
-    <strong>Összes:</strong> {{ vm.items.length }}
+    <div class="task-card">
+      <div *ngIf="vm.loading" class="info-banner">Töltés…</div>
+      <div *ngIf="vm.error" class="info-banner error">{{ vm.error }}</div>
+
+      <ul *ngIf="vm.items.length > 0" class="task-list">
+        <li *ngFor="let t of vm.items; trackBy: trackById" class="task-item" [class.is-completed]="t.completed"
+          [class.is-deleting]="isDeleting(vm, t)">
+          <label class="task-main">
+            <input class="task-checkbox" type="checkbox" [checked]="t.completed" (change)="toggle(t)"
+              [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)" />
+
+            <div class="task-content">
+              <span class="task-title">{{ t.title }}</span>
+              <small *ngIf="t.description" class="task-description">
+                {{ t.description }}
+              </small>
+            </div>
+          </label>
+
+          <div class="task-meta">
+
+            <button class="delete-btn" (click)="remove(t)"
+              [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)">
+              Törlés
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <div *ngIf="!vm.loading && vm.items.length === 0" class="empty-state">
+        <div class="empty-icon">✓</div>
+        <div>
+          <strong>Nincs feladat</strong>
+          <p>Minden kész, vagy még nem hoztál létre egyet sem.</p>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <ul *ngIf="vm.items.length > 0">
-    <li *ngFor="let t of vm.items; trackBy: trackById"
-      style="margin-bottom: 6px; opacity: {{ isDeleting(vm, t) ? '0.6' : '1' }};">
-      <label style="cursor:pointer;">
-        <input type="checkbox" [checked]="t.completed" (change)="toggle(t)"
-          [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)" />
-        <span [style.textDecoration]="t.completed ? 'line-through' : 'none'">
-          {{ t.title }}
-        </span>
-      </label>
-
-      <small *ngIf="t.description"> — {{ t.description }}</small>
-
-      <button style="margin-left: 8px;" (click)="remove(t)"
-        [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)">
-        törlés
-      </button>
-    </li>
-  </ul>
-
-  <div *ngIf="!vm.loading && vm.items.length === 0">
-    Nincs feladat.
-  </div>
-</div>
+</section>

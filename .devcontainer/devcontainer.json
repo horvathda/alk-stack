@@ -19,7 +19,7 @@
         8080,
         27017
     ],
-    "postCreateCommand": "cd src/frontend/web && npm install",
+    "postCreateCommand": "cd /workspaces/alk-stack/src/frontend/web && npm install",
     "customizations": {
         "vscode": {
             "extensions": [

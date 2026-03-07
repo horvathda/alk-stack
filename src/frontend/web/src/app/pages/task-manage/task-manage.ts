@@ -10,7 +10,8 @@ import { TaskItem } from '../../services/task';
   selector: 'app-task-manage',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './task-manage.html'
+  templateUrl: './task-manage.html',
+  styles: ["./task-manage.css"]
 })
 export class TaskManageComponent implements OnInit {
   vm$: Observable<TaskState>;

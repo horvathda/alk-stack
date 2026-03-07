@@ -9,6 +9,7 @@ import { TaskItem } from '../../services/task';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './task-list.html'
+
 })
 export class TaskListComponent implements OnInit {
   vm$: Observable<TaskState>;
