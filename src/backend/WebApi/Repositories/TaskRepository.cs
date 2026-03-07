@@ -14,12 +14,19 @@ public class TaskRepository
         _tasks = ctx.Tasks;
     }
 
-    public async Task<(List<TaskItem> Items, long Total)> GetPagedAsync(int page, int pageSize, string? q, bool? completed)
+    public async Task<(List<TaskItem> Items, long Total, long PendingCount, long CompletedCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        string? q,
+        bool? completed)
     {
         page = Math.Max(page, 1);
-        pageSize = Math.Clamp(pageSize, 1, 30);
+        pageSize = Math.Clamp(pageSize, 1, 10);
 
-        var filters = new List<FilterDefinition<TaskItem>> { Builders<TaskItem>.Filter.Empty };
+        var filters = new List<FilterDefinition<TaskItem>>
+        {
+            Builders<TaskItem>.Filter.Empty
+        };
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -37,6 +44,12 @@ public class TaskRepository
         var filter = Builders<TaskItem>.Filter.And(filters);
 
         var total = await _tasks.CountDocumentsAsync(filter);
+        var completedCount = await _tasks.CountDocumentsAsync(
+            Builders<TaskItem>.Filter.And(filter, Builders<TaskItem>.Filter.Eq(x => x.Completed, true))
+        );
+        var pendingCount = await _tasks.CountDocumentsAsync(
+            Builders<TaskItem>.Filter.And(filter, Builders<TaskItem>.Filter.Eq(x => x.Completed, false))
+        );
 
         var items = await _tasks.Find(filter)
             .SortBy(x => x.CreatedAt)
@@ -44,11 +57,11 @@ public class TaskRepository
             .Limit(pageSize)
             .ToListAsync();
 
-        return (items, total);
+        return (items, total, pendingCount, completedCount);
     }
 
-    public Task<TaskItem?> GetByIdAsync(string id) =>
-        _tasks.Find(x => x.Id == id).FirstOrDefaultAsync();
+    public Task<TaskItem?> GetByIdAsync(string id)
+        => _tasks.Find(x => x.Id == id).FirstOrDefaultAsync();
 
     public async Task<TaskItem> CreateAsync(TaskItem item)
     {

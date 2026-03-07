@@ -23,8 +23,18 @@ public class TasksController : ControllerBase
         [FromQuery] string? q = null,
         [FromQuery] bool? completed = null)
     {
-        var (items, total) = await _repo.GetPagedAsync(page, pageSize, q, completed);
-        return Ok(new { items, total, page, pageSize });
+        var (items, total, pendingCount, completedCount) =
+            await _repo.GetPagedAsync(page, pageSize, q, completed);
+
+        return Ok(new
+        {
+            items,
+            total,
+            pendingCount,
+            completedCount,
+            page,
+            pageSize
+        });
     }
 
     [HttpGet("{id}")]
@@ -58,7 +68,8 @@ public class TasksController : ControllerBase
             return BadRequest("Title is required.");
 
         var existing = await _repo.GetByIdAsync(id);
-        if (existing is null) return NotFound();
+        if (existing is null)
+            return NotFound();
 
         existing.Title = req.Title.Trim();
         existing.Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim();

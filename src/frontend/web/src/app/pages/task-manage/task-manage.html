@@ -5,7 +5,6 @@
         <h2>Hozzáadás / módosítás</h2>
         <p class="manage-subtitle">Új feladat rögzítése vagy meglévő szerkesztése</p>
       </div>
-
     </div>
 
     <div *ngIf="vm.error" class="info-banner error">{{ vm.error }}</div>
@@ -14,7 +13,7 @@
       <aside class="manage-card manage-sidebar">
         <div class="card-head">
           <h3>Feladat kiválasztása</h3>
-          <span class="mini-count">{{ vm.items.length }} db</span>
+          <span class="mini-count">{{ vm.total }} db</span>
         </div>
 
         <div *ngIf="vm.loading" class="info-banner">Töltés…</div>
@@ -30,6 +29,25 @@
 
         <div *ngIf="!vm.loading && vm.items.length === 0" class="empty-box">
           Még nincs választható feladat.
+        </div>
+
+        <div *ngIf="selectedId && !isSelectedTaskVisible(vm)" class="info-banner">
+          A kijelölt feladat nem ezen az oldalon látható.
+        </div>
+
+        <div *ngIf="vm.total > vm.pageSize" class="pagination manage-pagination">
+          <button class="page-btn" type="button" (click)="goPrev(vm)" [disabled]="!canGoPrev(vm) || vm.loading">
+            Előző
+          </button>
+
+          <div class="page-info">
+            <span>Oldal {{ vm.page }} / {{ getTotalPages(vm) }}</span>
+            <small>{{ vm.total }} összes feladat</small>
+          </div>
+
+          <button class="page-btn" type="button" (click)="goNext(vm)" [disabled]="!canGoNext(vm) || vm.loading">
+            Következő
+          </button>
         </div>
       </aside>
 
@@ -59,11 +77,11 @@
           </label>
 
           <div class="form-actions">
-            <button class="primary-btn" (click)="save()" [disabled]="vm.loading || !title.trim()">
+            <button class="primary-btn" type="button" (click)="save()" [disabled]="vm.loading || !title.trim()">
               {{ selectedId ? 'Mentés' : 'Hozzáadás' }}
             </button>
 
-            <button class="ghost-btn" (click)="resetForm()" [disabled]="vm.loading">
+            <button class="ghost-btn" type="button" (click)="resetForm()" [disabled]="vm.loading">
               Új / reset
             </button>
           </div>

@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { TaskApi, TaskItem } from '../services/task';
+import { TaskApi, TaskItem, PagedTasks } from '../services/task';
 
 export interface TaskState {
     items: TaskItem[];
     total: number;
+    pendingCount: number;
+    completedCount: number;
     page: number;
     pageSize: number;
     loading: boolean;
@@ -14,15 +16,15 @@ export interface TaskState {
     deletingIds: string[];
 }
 
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class TaskStore {
     private state$ = new BehaviorSubject<TaskState>({
         items: [],
         total: 0,
+        pendingCount: 0,
+        completedCount: 0,
         page: 1,
-        pageSize: 30,
+        pageSize: 10,
         loading: false,
         error: null,
         savingIds: [],
@@ -39,10 +41,7 @@ export class TaskStore {
 
     private addSaving(id: string) {
         if (this.s.savingIds.includes(id)) return;
-        this.state$.next({
-            ...this.s,
-            savingIds: [...this.s.savingIds, id]
-        });
+        this.state$.next({ ...this.s, savingIds: [...this.s.savingIds, id] });
     }
 
     private removeSaving(id: string) {
@@ -54,10 +53,7 @@ export class TaskStore {
 
     private addDeleting(id: string) {
         if (this.s.deletingIds.includes(id)) return;
-        this.state$.next({
-            ...this.s,
-            deletingIds: [...this.s.deletingIds, id]
-        });
+        this.state$.next({ ...this.s, deletingIds: [...this.s.deletingIds, id] });
     }
 
     private removeDeleting(id: string) {
@@ -81,13 +77,17 @@ export class TaskStore {
         this.state$.next({ ...this.s, loading: true, error: null });
 
         this.api.getTasks(this.s.page, this.s.pageSize)
-            .pipe(finalize(() => this.state$.next({ ...this.s, loading: false })))
+            .pipe(
+                finalize(() => this.state$.next({ ...this.state$.value, loading: false }))
+            )
             .subscribe({
-                next: (res) => {
+                next: (res: PagedTasks) => {
                     this.state$.next({
-                        ...this.s,
+                        ...this.state$.value,
                         items: res.items ?? [],
                         total: res.total ?? 0,
+                        pendingCount: res.pendingCount ?? 0,
+                        completedCount: res.completedCount ?? 0,
                         page: res.page ?? this.s.page,
                         pageSize: res.pageSize ?? this.s.pageSize,
                         error: null
@@ -95,9 +95,11 @@ export class TaskStore {
                 },
                 error: (err) => {
                     this.state$.next({
-                        ...this.s,
+                        ...this.state$.value,
                         items: [],
                         total: 0,
+                        pendingCount: 0,
+                        completedCount: 0,
                         error: err?.message ?? 'Failed to load tasks'
                     });
                 }
@@ -108,10 +110,17 @@ export class TaskStore {
         this.state$.next({ ...this.s, loading: true, error: null });
 
         this.api.createTask({ title, description })
-            .pipe(finalize(() => this.state$.next({ ...this.s, loading: false })))
+            .pipe(
+                finalize(() => this.state$.next({ ...this.state$.value, loading: false }))
+            )
             .subscribe({
                 next: () => this.refresh(),
-                error: (err) => this.state$.next({ ...this.s, error: err?.message ?? 'Create failed' })
+                error: (err) => {
+                    this.state$.next({
+                        ...this.state$.value,
+                        error: err?.message ?? 'Create failed'
+                    });
+                }
             });
     }
 
@@ -121,21 +130,17 @@ export class TaskStore {
             item.id === id ? { ...item, title, description, completed } : item
         );
 
-        this.state$.next({
-            ...this.s,
-            items: newItems,
-            error: null
-        });
-
+        this.state$.next({ ...this.s, items: newItems, error: null });
         this.addSaving(id);
 
         this.api.updateTask(id, { title, description, completed }).subscribe({
             next: () => {
                 this.removeSaving(id);
+                this.refresh();
             },
             error: (err) => {
                 this.state$.next({
-                    ...this.s,
+                    ...this.state$.value,
                     items: previousItems,
                     error: err?.message ?? 'Update failed'
                 });
@@ -149,7 +154,7 @@ export class TaskStore {
 
         this.api.deleteTask(id).subscribe({
             next: () => {
-                const current = this.s;
+                const current = this.state$.value;
                 const nextItems = current.items.filter(x => x.id !== id);
                 const nextTotal = Math.max(0, current.total - 1);
 
@@ -169,13 +174,11 @@ export class TaskStore {
                     deletingIds: current.deletingIds.filter(x => x !== id)
                 });
 
-                if (nextPage !== current.page) {
-                    this.refresh();
-                }
+                this.refresh();
             },
             error: (err) => {
                 this.state$.next({
-                    ...this.s,
+                    ...this.state$.value,
                     error: err?.message ?? 'Delete failed'
                 });
                 this.removeDeleting(id);

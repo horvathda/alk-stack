@@ -11,7 +11,7 @@ import { TaskItem } from '../../services/task';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './task-manage.html',
-  styles: ["./task-manage.css"]
+  styleUrl: './task-manage.css'
 })
 export class TaskManageComponent implements OnInit {
   vm$: Observable<TaskState>;
@@ -26,7 +26,7 @@ export class TaskManageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.refresh();
+    this.store.setPageSize(10);
   }
 
   selectTask(t: TaskItem) {
@@ -58,5 +58,33 @@ export class TaskManageComponent implements OnInit {
 
     this.store.create(title, description);
     this.resetForm();
+  }
+
+  getTotalPages(vm: TaskState): number {
+    if (!vm.pageSize || vm.pageSize < 1) return 1;
+    return Math.max(1, Math.ceil(vm.total / vm.pageSize));
+  }
+
+  canGoPrev(vm: TaskState): boolean {
+    return vm.page > 1;
+  }
+
+  canGoNext(vm: TaskState): boolean {
+    return vm.page < this.getTotalPages(vm);
+  }
+
+  goPrev(vm: TaskState) {
+    if (!this.canGoPrev(vm)) return;
+    this.store.setPage(vm.page - 1);
+  }
+
+  goNext(vm: TaskState) {
+    if (!this.canGoNext(vm)) return;
+    this.store.setPage(vm.page + 1);
+  }
+
+  isSelectedTaskVisible(vm: TaskState): boolean {
+    if (!this.selectedId) return false;
+    return vm.items.some(t => t.id === this.selectedId);
   }
 }

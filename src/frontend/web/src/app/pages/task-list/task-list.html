@@ -11,13 +11,15 @@
           <span class="stat-label">Függőben</span>
           <strong>{{ getPendingCount(vm) }}</strong>
         </div>
+
         <div class="stat-badge done">
           <span class="stat-label">Kész</span>
           <strong>{{ getCompletedCount(vm) }}</strong>
         </div>
+
         <div class="stat-badge total">
           <span class="stat-label">Összes</span>
-          <strong>{{ vm.items.length }}</strong>
+          <strong>{{ vm.total }}</strong>
         </div>
       </div>
     </div>
@@ -42,7 +44,6 @@
           </label>
 
           <div class="task-meta">
-
             <button class="delete-btn" (click)="remove(t)"
               [disabled]="vm.loading || isSaving(vm, t) || isDeleting(vm, t)">
               Törlés
@@ -57,6 +58,21 @@
           <strong>Nincs feladat</strong>
           <p>Minden kész, vagy még nem hoztál létre egyet sem.</p>
         </div>
+      </div>
+
+      <div *ngIf="vm.total > vm.pageSize" class="pagination">
+        <button class="page-btn" (click)="goPrev(vm)" [disabled]="!canGoPrev(vm) || vm.loading">
+          Előző
+        </button>
+
+        <div class="page-info">
+          <span>Oldal {{ vm.page }} / {{ getTotalPages(vm) }}</span>
+          <small>{{ vm.total }} összes feladat</small>
+        </div>
+
+        <button class="page-btn" (click)="goNext(vm)" [disabled]="!canGoNext(vm) || vm.loading">
+          Következő
+        </button>
       </div>
     </div>
   </div>

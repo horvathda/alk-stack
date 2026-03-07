@@ -9,7 +9,6 @@ import { TaskItem } from '../../services/task';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './task-list.html'
-
 })
 export class TaskListComponent implements OnInit {
   vm$: Observable<TaskState>;
@@ -19,7 +18,7 @@ export class TaskListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.setPageSize(30);
+    this.store.setPageSize(10);
     this.store.refresh();
   }
 
@@ -28,19 +27,46 @@ export class TaskListComponent implements OnInit {
   }
 
   isSaving(vm: TaskState, t: TaskItem) {
-    return !!t.id && 'savingIds' in vm && Array.isArray((vm as any).savingIds) && (vm as any).savingIds.includes(t.id);
+    return !!t.id &&
+      Array.isArray(vm.savingIds) &&
+      vm.savingIds.includes(t.id);
   }
 
   isDeleting(vm: TaskState, t: TaskItem) {
-    return !!t.id && 'deletingIds' in vm && Array.isArray((vm as any).deletingIds) && (vm as any).deletingIds.includes(t.id);
+    return !!t.id &&
+      Array.isArray(vm.deletingIds) &&
+      vm.deletingIds.includes(t.id);
   }
 
   getPendingCount(vm: TaskState): number {
-    return vm.items.filter(t => !t.completed).length;
+    return vm.pendingCount;
   }
 
   getCompletedCount(vm: TaskState): number {
-    return vm.items.filter(t => t.completed).length;
+    return vm.completedCount;
+  }
+
+  getTotalPages(vm: TaskState): number {
+    if (!vm.pageSize || vm.pageSize < 1) return 1;
+    return Math.max(1, Math.ceil(vm.total / vm.pageSize));
+  }
+
+  canGoPrev(vm: TaskState): boolean {
+    return vm.page > 1;
+  }
+
+  canGoNext(vm: TaskState): boolean {
+    return vm.page < this.getTotalPages(vm);
+  }
+
+  goPrev(vm: TaskState) {
+    if (!this.canGoPrev(vm)) return;
+    this.store.setPage(vm.page - 1);
+  }
+
+  goNext(vm: TaskState) {
+    if (!this.canGoNext(vm)) return;
+    this.store.setPage(vm.page + 1);
   }
 
   toggle(t: TaskItem) {
